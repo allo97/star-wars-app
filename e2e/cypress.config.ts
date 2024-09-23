@@ -8,11 +8,10 @@ export default defineConfig({
       cypressDir: 'src',
       webServerCommands: {
         default: 'npx nx run star-wars-app:serve',
-        production: 'npx nx run star-wars-app:serve-static',
+        production: 'npx nx run star-wars-app:serve-static'
       },
-      ciWebServerCommand: 'npx nx run star-wars-app:serve-static',
-      ciBaseUrl: 'http://localhost:4200',
+      ciWebServerCommand: 'npx nx run star-wars-app:serve-static'
     }),
-    baseUrl: 'http://localhost:4200',
-  },
+    baseUrl: 'http://localhost:4200'
+  }
 });
