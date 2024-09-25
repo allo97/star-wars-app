@@ -1,0 +1,44 @@
+.example-card {
+  max-width: 450px;
+}
+
+.example-header-image {
+  background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
+  background-size: cover;
+}
+
+.example-card-footer {
+  padding: 16px;
+  margin: auto;
+}
+
+.mat-icon-button.mat-success {
+  color: #155724;
+}
+
+.win-button {
+  background-color: #155724;
+  color: #f0fff3;
+}
+
+.lose-button {
+  background-color: #ba1a1a;
+  color: #f0fff3;
+}
+
+.draw-button {
+  background-color: #c5550a;
+  color: #f0fff3;
+}
+
+.properties {
+  max-height: 360px;
+}
+
+.winner-loser-buttons {
+  margin-left: auto;
+}
+
+.spinner {
+  margin: auto;
+}

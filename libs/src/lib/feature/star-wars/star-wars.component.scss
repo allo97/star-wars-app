@@ -1,8 +1,9 @@
-.example-card {
-  max-width: 450px;
+.card-container {
+  align-items: center;
+  margin: auto;
+  width: 64%;
 }
 
-.example-header-image {
-  background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
-  background-size: cover;
+.start-game-button {
+  text-align: right;
 }

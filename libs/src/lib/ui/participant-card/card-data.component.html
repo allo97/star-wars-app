@@ -1,0 +1,51 @@
+@if(cardData) {
+<mat-card class="example-card" appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>{{ player }}</mat-card-title>
+    @if(!isLoading){
+    <mat-card-title>{{ cardData.properties?.name }}</mat-card-title>
+    }
+    <mat-card-subtitle>Score: {{ cardData.playerState.score }}</mat-card-subtitle>
+    @if(cardData.properties && !isLoading){
+    <div class="winner-loser-buttons">
+      @if(cardData.playerState.isRoundWon === undefined){
+      <button mat-flat-button class="draw-button">
+        <mat-icon>balance</mat-icon>
+        Draw
+      </button>
+      } @if(cardData.playerState.isRoundWon === true){
+      <button mat-flat-button class="win-button">
+        <mat-icon>emoji_events</mat-icon>
+        Winner
+      </button>
+      } @if(cardData.playerState.isRoundWon === false){
+      <button mat-flat-button class="lose-button">
+        <mat-icon>disabled_by_default</mat-icon>
+        Loser
+      </button>
+      }
+    </div>
+    }
+  </mat-card-header>
+  <mat-card-content>
+    @if(isLoading) {
+    <div class="col text-center"><mat-spinner [diameter]="50" [strokeWidth]="6" class="spinner"></mat-spinner></div>
+    } @else {
+    <pre class="properties">
+        {{ cardData.properties | json }}
+      </pre
+    >
+    }
+  </mat-card-content>
+  <mat-card-footer class="example-card-footer">
+    <mat-form-field>
+      <mat-label>Resource</mat-label>
+      <mat-select [(value)]="cardData.resource">
+        @for (resource of resources; track resource) {
+        <mat-option [value]="resource">{{ resource | titlecase }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </mat-card-footer>
+</mat-card>
+}

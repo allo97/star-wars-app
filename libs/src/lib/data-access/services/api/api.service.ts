@@ -19,5 +19,5 @@ export class ApiService {
     this.http.get<GetAllResponse>(`${config.api}/${route}?page=1&limit=100`);
 
   public getById = <T extends Properties>(id: number, route: string): Observable<GetByIdResponse<T>> =>
-    this.http.get<GetByIdResponse<T>>(`${config.peopleApi}/${route}/${id}`);
+    this.http.get<GetByIdResponse<T>>(`${config.api}/${route}/${id}`);
 }
