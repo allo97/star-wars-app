@@ -2,19 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { BehaviorSubject, combineLatest, map, Subject, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, take, tap } from 'rxjs';
 import { ApiService } from '../../data-access/services/api/api.service';
 import { CardDataComponent } from '../../ui/participant-card/card-data.component';
-import {
-  GameState,
-  GetByIdRequestData,
-  IdsFromResponse,
-  initialGameState,
-  Resource,
-  Response,
-  RoundResults
-} from '../../util/models/star-wars-models';
-import { PeopleProperties, Properties, StarshipProperties } from './../../util/models/star-wars-models';
+import { GameState, initialGameState } from '../../util/models/star-wars-models';
+import { StarWarsService } from './../../data-access/services/star-wars/star-wars.service';
 
 @Component({
   selector: 'sw-star-wars',
@@ -25,118 +17,74 @@ import { PeopleProperties, Properties, StarshipProperties } from './../../util/m
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StarWarsComponent {
-  private peopleRoute = 'people';
-  private starshipsRoute = 'starships';
   private getAll$ = combineLatest([
-    this.apiService.getAll(this.peopleRoute),
-    this.apiService.getAll(this.starshipsRoute)
+    this.apiService.getAll(this.starWarsService.peopleRoute),
+    this.apiService.getAll(this.starWarsService.starshipsRoute)
   ]);
   private isLoading$ = new BehaviorSubject<boolean>(false);
   private gameState$ = new BehaviorSubject<GameState>(initialGameState);
-  private idsFromResponse = {} as IdsFromResponse;
-
-  public play$ = new Subject<GetByIdRequestData>();
-  public playPipeline$ = this.play$.asObservable().pipe(
-    switchMap((requestData) =>
-      combineLatest([
-        this.apiService.getById(requestData.player1RequestData.id, requestData.player1RequestData.route),
-        this.apiService.getById(requestData.player2RequestData.id, requestData.player2RequestData.route)
-      ])
-    ),
-    map(([player1Response, player2Response]) => ({ player1Response, player2Response })),
-    tap((response) => {
-      const roundResults = this.calculateRoundResults(response);
-      const updatedGameState = {
-        player1: {
-          playerState: {
-            isRoundWon: roundResults.player1Result.isRoundWon,
-            score: roundResults.player1Result.score
-          },
-          properties: response.player1Response.result.properties,
-          resource: this.gameState$.value.player1.resource,
-          uid: response.player1Response.result.uid
-        },
-        player2: {
-          playerState: {
-            isRoundWon: roundResults.player2Result.isRoundWon,
-            score: roundResults.player2Result.score
-          },
-          properties: response.player2Response.result.properties,
-          resource: this.gameState$.value.player2.resource,
-          uid: response.player2Response.result.uid
-        }
-      } as GameState;
-
-      this.gameState$.next(updatedGameState);
-      this.isLoading$.next(false);
-    })
-  );
 
   public vm$ = combineLatest([this.getAll$, this.isLoading$.asObservable(), this.gameState$.asObservable()]).pipe(
-    map(([getAllData, isLoading, gameState]) => ({ getAllData, isLoading, gameState })),
-    tap((vm) => {
-      this.idsFromResponse = {
-        peopleIds: vm.getAllData[0].results.map((result) => result.uid),
-        starshipsIds: vm.getAllData[1].results.map((result) => result.uid)
+    tap(([[peopleIds, starshipIds]]) => {
+      this.starWarsService.idsFromResponse = {
+        peopleIds: peopleIds.results.map((result) => result.uid),
+        starshipIds: starshipIds.results.map((result) => result.uid)
       };
-    })
+    }),
+    map(([, isLoading, gameState]) => ({ isLoading, gameState }))
   );
 
-  constructor(private readonly apiService: ApiService) {}
+  constructor(private readonly apiService: ApiService, private readonly starWarsService: StarWarsService) {}
 
   public play() {
-    this.isLoading$.next(true);
-
-    const player1DrawData = this.getDrawData(this.gameState$.value.player1.resource);
-    const player2DrawData = this.getDrawData(this.gameState$.value.player2.resource);
-
-    const getByIdRequestData = {
-      player1RequestData: { id: this.getRandomId(player1DrawData.ids), route: player1DrawData.route },
-      player2RequestData: { id: this.getRandomId(player2DrawData.ids), route: player2DrawData.route }
-    } as GetByIdRequestData;
-
-    this.play$.next(getByIdRequestData);
+    this.playRound()
+      .pipe(take(1))
+      .subscribe((updatedGameState) => this.gameState$.next(updatedGameState));
   }
 
   public startNewGame() {
     this.gameState$.next(initialGameState);
   }
 
-  private getDrawData(resource: Resource) {
-    return resource === 'people'
-      ? { ids: this.idsFromResponse.peopleIds, route: this.peopleRoute }
-      : { ids: this.idsFromResponse.starshipsIds, route: this.starshipsRoute };
-  }
+  private playRound() {
+    this.isLoading$.next(true);
 
-  private getRandomId(ids: string[]) {
-    return Number(ids[Math.floor(Math.random() * ids.length)]);
-  }
+    const player1DrawData = this.starWarsService.getDrawData(this.gameState$.value.player1.resource);
+    const player2DrawData = this.starWarsService.getDrawData(this.gameState$.value.player2.resource);
 
-  private getWeight(properties: Properties) {
-    const weight = (<PeopleProperties>properties).mass
-      ? (<PeopleProperties>properties).mass
-      : (<StarshipProperties>properties).crew;
+    return combineLatest([
+      this.apiService.getById(this.starWarsService.getRandomId(player1DrawData.ids), player1DrawData.route),
+      this.apiService.getById(this.starWarsService.getRandomId(player2DrawData.ids), player2DrawData.route)
+    ]).pipe(
+      map(([player1Response, player2Response]) => {
+        const hasPlayer1Won = this.starWarsService.hasPlayer1Won(
+          player1Response.result.properties,
+          player2Response.result.properties
+        );
+        const updatedGameState = {
+          player1: {
+            playerState: {
+              isRoundWon: hasPlayer1Won,
+              score: +!!hasPlayer1Won + this.gameState$.value.player1.playerState.score
+            },
+            properties: player1Response.result.properties,
+            resource: this.gameState$.value.player1.resource,
+            uid: player1Response.result.uid
+          },
+          player2: {
+            playerState: {
+              isRoundWon: !hasPlayer1Won,
+              score: +!hasPlayer1Won + this.gameState$.value.player2.playerState.score
+            },
+            properties: player2Response.result.properties,
+            resource: this.gameState$.value.player2.resource,
+            uid: player2Response.result.uid
+          }
+        } as GameState;
 
-    const weightWithoutComma = weight.replace(',', '').replace('unknown', '0');
-    return Number(weightWithoutComma.includes('-') ? weightWithoutComma.split('-')[1] : weightWithoutComma);
-  }
-
-  private calculateRoundResults(response: Response) {
-    const player1Weight = this.getWeight(response.player1Response.result.properties);
-    const player2Weight = this.getWeight(response.player2Response.result.properties);
-
-    const hasPlayer1Won = player1Weight === player2Weight ? undefined : player1Weight > player2Weight;
-    const hasPlayer2Won = player1Weight === player2Weight ? undefined : player2Weight > player1Weight;
-
-    return {
-      player1Result: {
-        isRoundWon: hasPlayer1Won,
-        score: +!!hasPlayer1Won + this.gameState$.value.player1.playerState.score
-      },
-      player2Result: {
-        isRoundWon: hasPlayer2Won,
-        score: +!!hasPlayer2Won + this.gameState$.value.player2.playerState.score
-      }
-    } as RoundResults;
+        this.isLoading$.next(false);
+        return updatedGameState;
+      })
+    );
   }
 }

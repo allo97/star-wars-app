@@ -3,18 +3,7 @@ export interface GetByIdResponse<T extends Properties> {
   result: Result<T>;
 }
 
-export interface GetByIdRequestData {
-  player1RequestData: {
-    id: number;
-    route: string;
-  };
-  player2RequestData: {
-    id: number;
-    route: string;
-  };
-}
-
-export interface Response {
+export interface CombinedResponse {
   player1Response: GetByIdResponse<Properties>;
   player2Response: GetByIdResponse<Properties>;
 }
@@ -113,10 +102,5 @@ export const initialGameState: GameState = {
 
 export interface IdsFromResponse {
   peopleIds: string[];
-  starshipsIds: string[];
-}
-
-export interface RoundResults {
-  player1Result: { isRoundWon: boolean | undefined; score: number };
-  player2Result: { isRoundWon: boolean | undefined; score: number };
+  starshipIds: string[];
 }
