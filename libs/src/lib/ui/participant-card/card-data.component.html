@@ -5,20 +5,20 @@
     @if(!isLoading){
     <mat-card-title>{{ cardData.properties?.name }}</mat-card-title>
     }
-    <mat-card-subtitle>Score: {{ cardData.playerState.score }}</mat-card-subtitle>
+    <mat-card-subtitle>Score: {{ cardData.score }}</mat-card-subtitle>
     @if(cardData.properties && !isLoading){
     <div class="winner-loser-buttons">
-      @if(cardData.playerState.isRoundWon === undefined){
+      @if(cardData.isRoundWon === undefined){
       <button mat-flat-button class="draw-button">
         <mat-icon>balance</mat-icon>
         Draw
       </button>
-      } @if(cardData.playerState.isRoundWon === true){
+      } @if(cardData.isRoundWon === true){
       <button mat-flat-button class="win-button">
         <mat-icon>emoji_events</mat-icon>
         Winner
       </button>
-      } @if(cardData.playerState.isRoundWon === false){
+      } @if(cardData.isRoundWon === false){
       <button mat-flat-button class="lose-button">
         <mat-icon>disabled_by_default</mat-icon>
         Loser

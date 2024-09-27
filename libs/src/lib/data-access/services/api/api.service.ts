@@ -1,23 +1,30 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { GetAllResponse, GetByIdResponse, Properties } from '../../../util/models/star-wars-models';
-
-const config = {
-  peopleApi: 'https://www.swapi.tech/api/people',
-  starshipsApi: 'https://www.swapi.tech/api/starships',
-  api: 'https://www.swapi.tech/api'
-};
+import { map, Observable } from 'rxjs';
+import {
+  GetAllResponse,
+  GetAllResult,
+  GetByIdResponse,
+  Properties,
+  Resource,
+  Result
+} from '../../../util/models/star-wars-models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+  public readonly apiUrl = 'https://www.swapi.tech/api';
+
   constructor(private http: HttpClient) {}
 
-  public getAll = (route: string): Observable<GetAllResponse> =>
-    this.http.get<GetAllResponse>(`${config.api}/${route}?page=1&limit=100`);
+  public getAll = (resource: Resource): Observable<GetAllResult[]> =>
+    this.http
+      .get<GetAllResponse>(`${this.apiUrl}/${resource}?page=1&limit=100`)
+      .pipe(map((getAllResponse) => getAllResponse.results));
 
-  public getById = <T extends Properties>(id: number, route: string): Observable<GetByIdResponse<T>> =>
-    this.http.get<GetByIdResponse<T>>(`${config.api}/${route}/${id}`);
+  public getById = <T extends Properties>(id: number, resource: Resource): Observable<Result<T>> =>
+    this.http
+      .get<GetByIdResponse<T>>(`${this.apiUrl}/${resource}/${id}`)
+      .pipe(map((getByIdResponse) => getByIdResponse.result));
 }

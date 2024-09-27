@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { Properties } from '../../util/models/star-wars-models';
+import { Properties, Resource } from '../../util/models/star-wars-models';
 import { CardData } from './../../util/models/star-wars-models';
 
 @Component({
@@ -34,5 +34,5 @@ export class CardDataComponent<T extends Properties> {
   @Input({ required: true }) public player?: string;
   @Input({ required: true }) public isLoading = false;
 
-  public resources = ['people', 'starship'];
+  public resources: Resource[] = Object.values(Resource);
 }

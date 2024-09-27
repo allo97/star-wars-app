@@ -69,14 +69,13 @@ export interface CardData<T extends Properties> {
   uid?: string;
   properties?: T;
   resource: Resource;
-  playerState: PlayerState;
-}
-
-export type Resource = 'people' | 'starship';
-
-export interface PlayerState {
   score: number;
   isRoundWon: boolean | undefined;
+}
+
+export enum Resource {
+  People = 'people',
+  Starships = 'starships'
 }
 
 export interface GameState {
@@ -84,23 +83,19 @@ export interface GameState {
   player2: CardData<StarshipProperties>;
 }
 
-export const initialPlayerState: PlayerState = {
-  isRoundWon: undefined,
-  score: 0
-};
-
 export const initialGameState: GameState = {
   player1: {
-    playerState: initialPlayerState,
-    resource: 'people'
+    isRoundWon: undefined,
+    score: 0,
+    resource: Resource.People
   },
   player2: {
-    playerState: initialPlayerState,
-    resource: 'starship'
+    isRoundWon: undefined,
+    score: 0,
+    resource: Resource.Starships
   }
 } as GameState;
 
-export interface IdsFromResponse {
-  peopleIds: string[];
-  starshipIds: string[];
-}
+export type IdsCollection = {
+  [key in Resource]: string[];
+};

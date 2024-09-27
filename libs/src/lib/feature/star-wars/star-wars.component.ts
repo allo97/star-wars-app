@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { BehaviorSubject, combineLatest, map, take, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, firstValueFrom, map, tap } from 'rxjs';
 import { ApiService } from '../../data-access/services/api/api.service';
 import { CardDataComponent } from '../../ui/participant-card/card-data.component';
 import { GameState, initialGameState } from '../../util/models/star-wars-models';
@@ -18,17 +18,17 @@ import { StarWarsService } from './../../data-access/services/star-wars/star-war
 })
 export class StarWarsComponent {
   private getAll$ = combineLatest([
-    this.apiService.getAll(this.starWarsService.peopleRoute),
-    this.apiService.getAll(this.starWarsService.starshipsRoute)
+    this.apiService.getAll(initialGameState.player1.resource),
+    this.apiService.getAll(initialGameState.player2.resource)
   ]);
   private isLoading$ = new BehaviorSubject<boolean>(false);
   private gameState$ = new BehaviorSubject<GameState>(initialGameState);
 
   public vm$ = combineLatest([this.getAll$, this.isLoading$.asObservable(), this.gameState$.asObservable()]).pipe(
-    tap(([[peopleIds, starshipIds]]) => {
-      this.starWarsService.idsFromResponse = {
-        peopleIds: peopleIds.results.map((result) => result.uid),
-        starshipIds: starshipIds.results.map((result) => result.uid)
+    tap(([[people, starships]]) => {
+      this.starWarsService.idsCollection = {
+        people: people.map((result) => result.uid),
+        starships: starships.map((result) => result.uid)
       };
     }),
     map(([, isLoading, gameState]) => ({ isLoading, gameState }))
@@ -36,10 +36,11 @@ export class StarWarsComponent {
 
   constructor(private readonly apiService: ApiService, private readonly starWarsService: StarWarsService) {}
 
-  public play() {
-    this.playRound()
-      .pipe(take(1))
-      .subscribe((updatedGameState) => this.gameState$.next(updatedGameState));
+  public async play() {
+    this.isLoading$.next(true);
+    const updatedGameState = await firstValueFrom(this.playRound());
+    this.gameState$.next(updatedGameState);
+    this.isLoading$.next(false);
   }
 
   public startNewGame() {
@@ -47,42 +48,38 @@ export class StarWarsComponent {
   }
 
   private playRound() {
-    this.isLoading$.next(true);
-
-    const player1DrawData = this.starWarsService.getDrawData(this.gameState$.value.player1.resource);
-    const player2DrawData = this.starWarsService.getDrawData(this.gameState$.value.player2.resource);
+    const player1Resource = this.gameState$.value.player1.resource;
+    const player2Resource = this.gameState$.value.player2.resource;
 
     return combineLatest([
-      this.apiService.getById(this.starWarsService.getRandomId(player1DrawData.ids), player1DrawData.route),
-      this.apiService.getById(this.starWarsService.getRandomId(player2DrawData.ids), player2DrawData.route)
+      this.apiService.getById(
+        this.starWarsService.getRandomId(this.starWarsService.idsCollection[player1Resource]),
+        player1Resource
+      ),
+      this.apiService.getById(
+        this.starWarsService.getRandomId(this.starWarsService.idsCollection[player2Resource]),
+        player2Resource
+      )
     ]).pipe(
-      map(([player1Response, player2Response]) => {
-        const hasPlayer1Won = this.starWarsService.hasPlayer1Won(
-          player1Response.result.properties,
-          player2Response.result.properties
-        );
+      map(([player1Result, player2Result]) => {
+        const hasPlayer1Won = this.starWarsService.hasPlayer1Won(player1Result.properties, player2Result.properties);
         const updatedGameState = {
           player1: {
-            playerState: {
-              isRoundWon: hasPlayer1Won,
-              score: +!!hasPlayer1Won + this.gameState$.value.player1.playerState.score
-            },
-            properties: player1Response.result.properties,
+            isRoundWon: hasPlayer1Won,
+            score: +!!hasPlayer1Won + this.gameState$.value.player1.score,
+            properties: player1Result.properties,
             resource: this.gameState$.value.player1.resource,
-            uid: player1Response.result.uid
+            uid: player1Result.uid
           },
           player2: {
-            playerState: {
-              isRoundWon: !hasPlayer1Won,
-              score: +!hasPlayer1Won + this.gameState$.value.player2.playerState.score
-            },
-            properties: player2Response.result.properties,
+            isRoundWon: !hasPlayer1Won,
+            score: +!hasPlayer1Won + this.gameState$.value.player2.score,
+            properties: player2Result.properties,
             resource: this.gameState$.value.player2.resource,
-            uid: player2Response.result.uid
+            uid: player2Result.uid
           }
         } as GameState;
 
-        this.isLoading$.next(false);
         return updatedGameState;
       })
     );

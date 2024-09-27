@@ -1,25 +1,11 @@
 import { Injectable } from '@angular/core';
-import {
-  IdsFromResponse,
-  PeopleProperties,
-  Properties,
-  Resource,
-  StarshipProperties
-} from '../../../util/models/star-wars-models';
+import { IdsCollection, PeopleProperties, Properties, StarshipProperties } from '../../../util/models/star-wars-models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StarWarsService {
-  public peopleRoute = 'people';
-  public starshipsRoute = 'starships';
-  public idsFromResponse = {} as IdsFromResponse;
-
-  public getDrawData(resource: Resource) {
-    return resource === 'people'
-      ? { ids: this.idsFromResponse.peopleIds, route: this.peopleRoute }
-      : { ids: this.idsFromResponse.starshipIds, route: this.starshipsRoute };
-  }
+  public idsCollection = {} as IdsCollection;
 
   public getRandomId(ids: string[]) {
     return Number(ids[Math.floor(Math.random() * ids.length)]);
