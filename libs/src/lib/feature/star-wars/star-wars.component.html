@@ -2,15 +2,18 @@
   <div class="text-center">
     <h1>Star Wars</h1>
   </div>
-
   @if (vm$ | async; as vm) {
-  <!-- @if (playPipeline$ | async){} -->
   <div class="text-center">
     <button mat-flat-button (click)="startNewGame()">Start a new Game</button>
   </div>
   <div class="row my-5 card-container">
     <div class="col">
-      <sw-card-data [cardData]="vm.gameState.player1" [isLoading]="vm.isLoading" player="Player 1"></sw-card-data>
+      <sw-card-data
+        test-id="player1-card-data"
+        [cardData]="vm.gameState.player1"
+        [isLoading]="vm.isLoading"
+        player="Player 1"
+      ></sw-card-data>
     </div>
     <div class="col text-center">
       @if(!vm.isLoading) {
