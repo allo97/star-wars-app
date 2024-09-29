@@ -5,20 +5,20 @@
     @if(!isLoading){
     <mat-card-title>{{ cardData.properties?.name }}</mat-card-title>
     }
-    <mat-card-subtitle>Score: {{ cardData.score }}</mat-card-subtitle>
+    <mat-card-subtitle data-cy="score">Score: {{ cardData.score }}</mat-card-subtitle>
     @if(cardData.properties && !isLoading){
-    <div class="winner-loser-buttons">
-      @if(cardData.isRoundWon === undefined){
+    <div data-cy="winner-loser-buttons" class="winner-loser-buttons">
+      @if(cardData.roundResult === RoundResult.Draw){
       <button mat-flat-button class="draw-button">
         <mat-icon>balance</mat-icon>
         Draw
       </button>
-      } @if(cardData.isRoundWon === true){
+      } @if(cardData.roundResult === RoundResult.Win){
       <button mat-flat-button class="win-button">
         <mat-icon>emoji_events</mat-icon>
         Winner
       </button>
-      } @if(cardData.isRoundWon === false){
+      } @if(cardData.roundResult === RoundResult.Lose){
       <button mat-flat-button class="lose-button">
         <mat-icon>disabled_by_default</mat-icon>
         Loser
@@ -30,8 +30,8 @@
   <mat-card-content>
     @if(isLoading) {
     <div class="col text-center"><mat-spinner [diameter]="50" [strokeWidth]="6" class="spinner"></mat-spinner></div>
-    } @else {
-    <pre class="properties">
+    } @else if(cardData.properties) {
+    <pre data-cy="properties" class="properties">
         {{ cardData.properties | json }}
       </pre
     >
@@ -40,7 +40,7 @@
   <mat-card-footer class="example-card-footer">
     <mat-form-field>
       <mat-label>Resource</mat-label>
-      <mat-select [(value)]="cardData.resource">
+      <mat-select data-cy="select-resource" [(value)]="cardData.resource">
         @for (resource of resources; track resource) {
         <mat-option [value]="resource">{{ resource | titlecase }}</mat-option>
         }

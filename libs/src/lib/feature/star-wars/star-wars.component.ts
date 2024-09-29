@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { BehaviorSubject, combineLatest, firstValueFrom, map, tap } from 'rxjs';
 import { ApiService } from '../../data-access/services/api/api.service';
 import { CardDataComponent } from '../../ui/participant-card/card-data.component';
-import { GameState, initialGameState } from '../../util/models/star-wars-models';
+import { GameState, initialGameState, RoundResult } from '../../util/models/star-wars-models';
 import { StarWarsService } from './../../data-access/services/star-wars/star-wars.service';
 
 @Component({
@@ -62,18 +62,18 @@ export class StarWarsComponent {
       )
     ]).pipe(
       map(([player1Result, player2Result]) => {
-        const hasPlayer1Won = this.starWarsService.hasPlayer1Won(player1Result.properties, player2Result.properties);
+        const roundResults = this.starWarsService.getRoundResults(player1Result.properties, player2Result.properties);
         const updatedGameState = {
           player1: {
-            isRoundWon: hasPlayer1Won,
-            score: +!!hasPlayer1Won + this.gameState$.value.player1.score,
+            roundResult: roundResults.player1Result,
+            score: (roundResults.player1Result === RoundResult.Win ? 1 : 0) + this.gameState$.value.player1.score,
             properties: player1Result.properties,
             resource: this.gameState$.value.player1.resource,
             uid: player1Result.uid
           },
           player2: {
-            isRoundWon: !hasPlayer1Won,
-            score: +!hasPlayer1Won + this.gameState$.value.player2.score,
+            roundResult: roundResults.player2Result,
+            score: (roundResults.player2Result === RoundResult.Win ? 1 : 0) + this.gameState$.value.player2.score,
             properties: player2Result.properties,
             resource: this.gameState$.value.player2.resource,
             uid: player2Result.uid

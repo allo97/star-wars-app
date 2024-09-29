@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { Properties, Resource } from '../../util/models/star-wars-models';
+import { Properties, Resource, RoundResult } from '../../util/models/star-wars-models';
 import { CardData } from './../../util/models/star-wars-models';
 
 @Component({
@@ -35,4 +35,5 @@ export class CardDataComponent<T extends Properties> {
   @Input({ required: true }) public isLoading = false;
 
   public resources: Resource[] = Object.values(Resource);
+  public RoundResult = RoundResult;
 }

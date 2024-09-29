@@ -70,12 +70,18 @@ export interface CardData<T extends Properties> {
   properties?: T;
   resource: Resource;
   score: number;
-  isRoundWon: boolean | undefined;
+  roundResult: RoundResult;
 }
 
 export enum Resource {
   People = 'people',
   Starships = 'starships'
+}
+
+export enum RoundResult {
+  Win,
+  Lose,
+  Draw
 }
 
 export interface GameState {
@@ -85,12 +91,12 @@ export interface GameState {
 
 export const initialGameState: GameState = {
   player1: {
-    isRoundWon: undefined,
+    roundResult: RoundResult.Draw,
     score: 0,
     resource: Resource.People
   },
   player2: {
-    isRoundWon: undefined,
+    roundResult: RoundResult.Draw,
     score: 0,
     resource: Resource.Starships
   }

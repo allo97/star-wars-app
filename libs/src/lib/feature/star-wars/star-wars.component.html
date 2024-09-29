@@ -4,7 +4,7 @@
   </div>
   @if (vm$ | async; as vm) {
   <div class="text-center">
-    <button mat-flat-button (click)="startNewGame()">Start a new Game</button>
+    <button data-cy="new-game-button" mat-flat-button (click)="startNewGame()">Start a new Game</button>
   </div>
   <div class="row my-5 card-container">
     <div class="col">
@@ -17,7 +17,7 @@
     </div>
     <div class="col text-center">
       @if(!vm.isLoading) {
-      <button mat-flat-button (click)="play()">Play</button>
+      <button data-cy="play-button" mat-flat-button (click)="play()">Play</button>
       }
     </div>
     <div class="col">

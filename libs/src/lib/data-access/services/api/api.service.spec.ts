@@ -2,15 +2,8 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import {
-  GetAllResponse,
-  GetAllResult,
-  GetByIdResponse,
-  PeopleProperties,
-  Resource,
-  Result
-} from '../../../util/models/star-wars-models';
-import { peopleTestCardData } from '../../../util/models/test-data';
+import { Resource } from '../../../util/models/star-wars-models';
+import { getAllPeopleTestResponse, getPeopleByIdTestResponse } from '../../../util/models/test-data';
 import { ApiService } from './api.service';
 
 describe('ApiService', () => {
@@ -39,39 +32,21 @@ describe('ApiService', () => {
       { method: 'GET', url: 'https://www.swapi.tech/api/people?page=1&limit=100' },
       'Request to load people'
     );
-    const getAllResult = [{ name: 'test', uid: '1', url: 'test.com' } as GetAllResult];
-    const getAllResponse: GetAllResponse = {
-      message: 'ok',
-      total_records: 82,
-      total_pages: 1,
-      previous: '',
-      next: '',
-      results: getAllResult
-    };
-    req.flush(getAllResponse);
-    expect(await getAllPromise).toEqual(getAllResult);
+
+    req.flush(getAllPeopleTestResponse);
+    expect(await getAllPromise).toEqual(getAllPeopleTestResponse.results);
   });
 
   it('Get by Id should return a concrete people', async () => {
-    const uid = 1;
-    const getByIdPromise = firstValueFrom(apiService.getById(uid, Resource.People));
+    const uid = getPeopleByIdTestResponse.result.uid;
+    const getByIdPromise = firstValueFrom(apiService.getById(Number(uid), Resource.People));
     const req = httpTestingController.expectOne(
       { method: 'GET', url: `https://www.swapi.tech/api/people/${uid}` },
       'Request to load one people'
     );
-    const getAllResult = {
-      __v: 0,
-      _id: '5f63a36fee9fd7000499be53',
-      description: 'A person within the Star Wars universe',
-      uid: String(uid),
-      properties: peopleTestCardData.properties
-    } as Result<PeopleProperties>;
-    const getByIdResponse: GetByIdResponse<PeopleProperties> = {
-      message: 'ok',
-      result: getAllResult
-    };
-    req.flush(getByIdResponse);
-    expect(await getByIdPromise).toEqual(getAllResult);
+
+    req.flush(getPeopleByIdTestResponse);
+    expect(await getByIdPromise).toEqual(getPeopleByIdTestResponse.result);
   });
 
   it('throws an error if request fails', async () => {
