@@ -3,23 +3,23 @@
   <mat-card-header>
     <mat-card-title test-id="player">{{ player }}</mat-card-title>
     @if(!isLoading){
-    <mat-card-title>{{ cardData.properties?.name }}</mat-card-title>
+    <mat-card-title data-cy="resource-name">{{ cardData.properties?.name }}</mat-card-title>
     }
     <mat-card-subtitle data-cy="score">Score: {{ cardData.score }}</mat-card-subtitle>
     @if(cardData.properties && !isLoading){
     <div data-cy="winner-loser-buttons" class="winner-loser-buttons">
       @if(cardData.roundResult === RoundResult.Draw){
-      <button mat-flat-button class="draw-button">
+      <button data-cy="draw-button" mat-flat-button class="draw-button">
         <mat-icon>balance</mat-icon>
         Draw
       </button>
       } @if(cardData.roundResult === RoundResult.Win){
-      <button mat-flat-button class="win-button">
+      <button data-cy="win-button" mat-flat-button class="win-button">
         <mat-icon>emoji_events</mat-icon>
         Winner
       </button>
       } @if(cardData.roundResult === RoundResult.Lose){
-      <button mat-flat-button class="lose-button">
+      <button data-cy="lose-button" mat-flat-button class="lose-button">
         <mat-icon>disabled_by_default</mat-icon>
         Loser
       </button>
